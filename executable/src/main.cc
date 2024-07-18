@@ -1,8 +1,14 @@
-#include <iostream>
+#include "benchmarker.h"
 
-#include "test.h"
+#include <benchmark/benchmark.h>
 
-int main() {
-	std::cout << DummyFunction(2, 3) << std::endl;
-	return 0;
-}
+BENCHMARK_REGISTER_F(Benchmarker, IppsCopy)->Unit(benchmark::kMicrosecond);
+BENCHMARK_REGISTER_F(Benchmarker, IppsAdd)->Unit(benchmark::kMicrosecond);
+BENCHMARK_REGISTER_F(Benchmarker, IppsMul)->Unit(benchmark::kMicrosecond);
+BENCHMARK_REGISTER_F(Benchmarker, IppsDiv)->Unit(benchmark::kMicrosecond);
+
+BENCHMARK_REGISTER_F(Benchmarker, NaiveMul)->Unit(benchmark::kMicrosecond);
+BENCHMARK_REGISTER_F(Benchmarker, ParallelMul)->Unit(benchmark::kMicrosecond);
+BENCHMARK_REGISTER_F(Benchmarker, SIMDParallelMul)->Unit(benchmark::kMicrosecond);
+
+BENCHMARK_MAIN();

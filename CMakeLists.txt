@@ -9,9 +9,12 @@ project(
 	LANGUAGES CXX
 )
 
-add_compile_options(-O3 -m64 -Wall -Wextra -Wpedantic -Wshadow -double-promotion -flto -funroll-loops)
+add_compile_options(-g -O3 -Wall -Wextra -Wpedantic -Wshadow -Wdouble-promotion -flto -funroll-loops -fopenmp)
 
+find_package(OpenMP REQUIRED)
 find_package(IPP REQUIRED)
+find_package(MKL REQUIRED)
+find_package(benchmark REQUIRED)
 
 add_subdirectory(executable)
 add_subdirectory(libraries)
