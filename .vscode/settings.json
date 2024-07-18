@@ -1,6 +1,11 @@
 {
     "C_Cpp.default.compilerPath": "/usr/bin/gcc-13",
     "files.associations": {
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "functional": "cpp",
+        "chrono": "cpp",
+        "ostream": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp"
     }
 }

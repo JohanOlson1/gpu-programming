@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -24,6 +25,8 @@ class Benchmarker : public benchmark::Fixture {
         input2[i] = {static_cast<float>(std::rand() % 100)};
       }
 
+      std::cout << input[10] << ", " << input2[10] << std::endl;
+
       SetIppNumThreads(4);
     }
 
@@ -33,7 +36,7 @@ class Benchmarker : public benchmark::Fixture {
     std::vector<float> input;
     std::vector<float> input2;
     std::vector<float> output;
-    static constexpr unsigned N_elements_{500000};
+    static constexpr unsigned N_elements_{1000000};
 };
 
 BENCHMARK_DEFINE_F(Benchmarker, IppsCopy)(benchmark::State& state) {
@@ -86,14 +89,46 @@ BENCHMARK_DEFINE_F(Benchmarker, SIMDParallelMul)(benchmark::State& state) {
   }
 }
 
-// BENCHMARK_DEFINE_F(Benchmarker, SIMDParallelMul)(benchmark::State& state) {
-//   for(auto _ : state) {
-//     #pragma omp target teams distribute parallel
-//     for(unsigned i = 0; i < N_elements_; ++i) {
-//       output[i] = input[i] * input2[i];
-//     }
-//   }
-// }
+BENCHMARK_DEFINE_F(Benchmarker, NaiveMulGPU)(benchmark::State& state) {
+  for(auto _ : state) {
+    float* in_data = input.data();
+    float* in_data2 = input2.data();
+    float* out_data = output.data();
+    #pragma omp target teams distribute parallel for map(to:in_data[0:N_elements_], in_data2[0:N_elements_]) map(from:out_data[0:N_elements_])
+    for(unsigned i = 0; i < N_elements_; ++i) {
+      out_data[i] = in_data[i] * in_data2[i];
+    }
+  }
+}
+
+BENCHMARK_DEFINE_F(Benchmarker, CostlyOperation)(benchmark::State& state) {
+  for(auto _ : state) {
+    for(unsigned i = 0; i < N_elements_; ++i) {
+      output[i] = (input[i] * input2[i]) - std::pow(input[i], 3.0f);
+    }
+  }
+}
+
+BENCHMARK_DEFINE_F(Benchmarker, CostlyOperationParallel)(benchmark::State& state) {
+  for(auto _ : state) {
+    #pragma omp parallel for simd num_threads(4)
+    for(unsigned i = 0; i < N_elements_; ++i) {
+      output[i] = (input[i] * input2[i]) - std::pow(input[i], 3.0f);
+    }
+  }
+}
+
+BENCHMARK_DEFINE_F(Benchmarker, CostlyOperationGPU)(benchmark::State& state) {
+  for(auto _ : state) {
+    float* in_data = input.data();
+    float* in_data2 = input2.data();
+    float* out_data = output.data();
+    #pragma omp target teams distribute parallel for map(to:in_data[0:N_elements_], in_data2[0:N_elements_]) map(from:out_data[0:N_elements_])
+    for(unsigned i = 0; i < N_elements_; ++i) {
+      out_data[i] = (in_data[i] * in_data2[i]) - std::pow(in_data[i], 3.0f);
+    }
+  }
+}
 
 static void SetIppNumThreads(const int num_threads) {
     IppStatus status{ippSetNumThreads(num_threads)};
