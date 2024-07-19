@@ -9,7 +9,7 @@ project(
 	LANGUAGES CXX
 )
 
-add_compile_options(-g -O3 -Wall -Wextra -Wpedantic -Wshadow -Wdouble-promotion -flto -funroll-loops -fopenmp)
+add_compile_options(-g -m64 -O3 -Wall -Wextra -Wpedantic -Wshadow -Wdouble-promotion -flto -funroll-loops -fopenmp -foffload=nvptx-none -fcf-protection=none -fno-stack-protector -foffload=-lm)
 
 find_package(OpenMP REQUIRED)
 find_package(IPP REQUIRED)
