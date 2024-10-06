@@ -1,4 +1,45 @@
-#
+# Installations (Rocky Linux 9)
+Necessary stuff: <br>
+
+Fetching stuff directly from internet: <br>
+> dnf install wget <br>
+
+Add extra libraries to the rocky linux distro: <br>
+> dnf config-manager --set-enabled crb <br>
+> vim /etc/yum.repos.d/rocky.repo (and set [crb]s enable to 1) <br>
+> dnf install epel-release <br>
+> crb enable <br>
+
+## cmake
+> dnf install cmake
+
+## gcc
+The second call adds gcc-toolset-13 to your PATH, but we should specify the compiler in our CMakeLists.txt anyway <br>
+> dnf install gcc-toolset-13 <br>
+> /opt/rh/gcc-toolset-13/enable <br>
+
+## Offloading support
+> dnf dnf install gcc-toolset-13-offload-nvptx.x86_64 <br>
+
+## intel oneapi
+> wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/e6ff8e9c-ee28-47fb-abd7-5c524c983e1c/l_BaseKit_p_2024.2.1.100.sh <br>
+> sh ./l_BaseKit_p_2024.2.1.100.sh -a --silent --cli --eula accept <br> 
+> dnf groupinstall "Development Tools" <br>
+> chmod +x /opt/intel/oneapi/setvars.sh <br>
+> /opt/intel/oneapi/setvars.sh <br>
+
+## OpenMP
+> dnf install libgomp <br>
+
+## Google Test
+> dnf install gtest <br>
+> dnf isntall gtest-devel <br>
+
+## Google Benchmakr
+> dnf install google-benchmark <br>
+> dnf install google-benchmark-devel <br>
+
+# More
 
 ## openmp
 Once supported internal threading but it is no longer available/recommended! <br>

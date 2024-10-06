@@ -5,8 +5,7 @@
 #include <vector>
 
 #include <benchmark/benchmark.h>
-#include <ipps.h>
-#include <ippcore.h>
+#include <ipp.h>
 #include <omp.h>
 
 #ifndef BENCHMARKER_H_
@@ -124,7 +123,7 @@ BENCHMARK_DEFINE_F(Benchmarker, CostlyOperationGPU)(benchmark::State& state) {
     float* in_data = input.data();
     float* in_data2 = input2.data();
     float* out_data = output.data();
-    #pragma omp target teams distribute parallel for simd map(to:in_data[0:N_elements_], in_data2[0:N_elements_]) map(from:out_data[0:N_elements_])
+    //#pragma omp target teams distribute parallel for simd map(to:in_data[0:N_elements_], in_data2[0:N_elements_]) map(from:out_data[0:N_elements_])
     for(unsigned i = 0; i < N_elements_; ++i) {
       out_data[i] = (in_data[i] * in_data2[i]) - std::pow(in_data[i], 3.0f);
     }
