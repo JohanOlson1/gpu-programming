@@ -25,7 +25,7 @@ class Benchmarker : public benchmark::Fixture {
         input2[i] = {static_cast<float>(std::rand() % 100)};
       }
 
-      std::cout << input[10] << ", " << input2[10] << std::endl;
+      std::cerr << input[10] << ", " << input2[10] << std::endl;
     }
 
     ~Benchmarker() = default;
@@ -87,13 +87,35 @@ BENCHMARK_DEFINE_F(Benchmarker, SIMDParallelMul)(benchmark::State& state) {
   }
 }
 
+BENCHMARK_DEFINE_F(Benchmarker, TestGPU)(benchmark::State& state) {
+  CheckAvailableGPU();
+  for(auto _ : state) {
+    float* in_data = input.data();
+    float* in_data2 = input2.data();
+    float* out_data = output.data();
+    #pragma omp target
+    {
+      if (omp_is_initial_device()) {
+        printf("Running on host\n");    
+      } else {
+        int nteams= omp_get_num_teams(); 
+        int nthreads= omp_get_num_threads();
+        printf("Running on device with %d teams in total and %d threads in each team\n",nteams,nthreads);
+      }
+      for(unsigned i = 0; i < N_elements_; ++i) {
+        out_data[i] = in_data[i] * in_data2[i];
+      }
+    }
+  }
+}
+
 BENCHMARK_DEFINE_F(Benchmarker, NaiveMulGPU)(benchmark::State& state) {
   CheckAvailableGPU();
   for(auto _ : state) {
     float* in_data = input.data();
     float* in_data2 = input2.data();
     float* out_data = output.data();
-    #pragma omp target teams distribute parallel for map(to:in_data[0:N_elements_], in_data2[0:N_elements_]) map(from:out_data[0:N_elements_])
+    // #pragma omp target teams distribute parallel for map(to:in_data[0:N_elements_], in_data2[0:N_elements_]) map(from:out_data[0:N_elements_])
     for(unsigned i = 0; i < N_elements_; ++i) {
       out_data[i] = in_data[i] * in_data2[i];
     }
@@ -123,7 +145,7 @@ BENCHMARK_DEFINE_F(Benchmarker, CostlyOperationGPU)(benchmark::State& state) {
     float* in_data = input.data();
     float* in_data2 = input2.data();
     float* out_data = output.data();
-    //#pragma omp target teams distribute parallel for simd map(to:in_data[0:N_elements_], in_data2[0:N_elements_]) map(from:out_data[0:N_elements_])
+    // #pragma omp target teams distribute parallel for simd map(to:in_data[0:N_elements_], in_data2[0:N_elements_]) map(from:out_data[0:N_elements_])
     for(unsigned i = 0; i < N_elements_; ++i) {
       out_data[i] = (in_data[i] * in_data2[i]) - std::pow(in_data[i], 3.0f);
     }
@@ -132,7 +154,9 @@ BENCHMARK_DEFINE_F(Benchmarker, CostlyOperationGPU)(benchmark::State& state) {
 
 static void CheckAvailableGPU() {
   if(omp_get_num_devices() == 0) {
-    std::cout << "GPU is not available" << std::endl;
+    std::cerr << "GPU is not available" << std::endl;
+  } else {
+    std::cerr << "Devices available = " << omp_get_num_devices() << std::endl;
   }
 }
 
@@ -140,16 +164,16 @@ static void CheckAvailableGPU() {
     IppStatus status{ippSetNumThreads(num_threads)};
 
     if(status == ippStsNoErr) {
-        std::cout << "set number of ipp threads to: " << num_threads << std::endl;
+        std::cerr << "set number of ipp threads to: " << num_threads << std::endl;
     } else if(status == ippStsNoOperation) {
-        std::cout << "Failed to set number of threads" << std::endl;
+        std::cerr << "Failed to set number of threads" << std::endl;
     } else {
-        std::cout << "Error setting threads" << std::endl;
+        std::cerr << "Error setting threads" << std::endl;
     }
 
     int num_threads_after{0};
     ippGetNumThreads(&num_threads_after);
-    std::cout << "Number of threads used by ipp: " << num_threads_after << std::endl;
+    std::cerr << "Number of threads used by ipp: " << num_threads_after << std::endl;
 }
 
 #endif // BENCHMARKER_H_

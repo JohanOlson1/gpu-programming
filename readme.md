@@ -26,14 +26,14 @@ The second call adds gcc-toolset-13 to your PATH, but we should specify the comp
 > sh ./l_BaseKit_p_2024.2.1.100.sh -a --silent --cli --eula accept <br> 
 > dnf groupinstall "Development Tools" <br>
 > chmod +x /opt/intel/oneapi/setvars.sh <br>
-> /opt/intel/oneapi/setvars.sh <br>
+> source /opt/intel/oneapi/setvars.sh <br>
 
 ## OpenMP
 > dnf install libgomp <br>
 
 ## Google Test
 > dnf install gtest <br>
-> dnf isntall gtest-devel <br>
+> dnf install gtest-devel <br>
 
 ## Google Benchmakr
 > dnf install google-benchmark <br>
